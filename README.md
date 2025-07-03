@@ -68,14 +68,17 @@ Desenvolvido com foco em **eficiência comercial**, ele é ideal para imobiliár
    cd agent-imobiliario-atrio
 
 2. **Crie e ative um ambiente virtual**
+  ``` bash
   python -m venv venv
   source venv/bin/activate  # Linux/Mac
   venv\Scripts\activate     # Windows
 
 3. **Instale as dependências**
+  ``` bash
   pip install -r requirements.txt
 
 4. **Configure as variáveis de ambiente (.env)**
+  ``` bash
   OPENAI_API_KEY= "SUA KEY DA OPENAI"
   MONGO_USER = "SEU USUÁRIO MONGODB"
   MONGO_PASS = "SUA SENHA MONGODB"
@@ -85,9 +88,12 @@ Desenvolvido com foco em **eficiência comercial**, ele é ideal para imobiliár
 5. **Execute o agente**
  Eu utilizo dois terminais:
   - Um com o comando:
-     - docker-compose up --build waha
+     ``` bash
+     docker-compose up --build waha
   - Outo com o comando:
-     - docker-compose up --build api
+     ``` bash
+     docker-compose up --build api
+
 Em minha humilde opinião torna mais fácil o DEBUG
 
 ## 📁 Estrutura dos Dados
