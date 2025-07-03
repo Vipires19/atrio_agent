@@ -89,6 +89,7 @@ Desenvolvido com foco em **eficiência comercial**, ele é ideal para imobiliár
   ```
 
 5. **Execute o agente**
+
  Eu utilizo dois terminais:
   - Um com o comando:
      ``` bash
