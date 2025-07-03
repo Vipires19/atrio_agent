@@ -55,12 +55,6 @@ access_token = os.getenv('ASSAS_ACCESS_TOKEN')
 webhook_assas.create_webhook('imobi', access_token)
 waha = Waha()
 
-def carrega_txt(caminho):
-    loader = Docx2txtLoader(caminho)
-    lista_documentos = loader.load()
-    documento = '\n\n'.join([doc.page_content for doc in lista_documentos])
-    return documento
-
 memory = MongoDBSaver(coll_memoria)
 
 def check_user(state: dict, config: dict) -> dict:
@@ -860,9 +854,6 @@ class AgentMobi:
     
     def _build_agent(self):
         graph_builder = StateGraph(State)
-        #tools =tools_node
-        #llm = ChatOpenAI(model="gpt-4o-mini",openai_api_key=OPENAI_API_KEY, streaming=True)
-        #llm_with_tools = llm.bind_tools(tools=tools)
         
         tool_vector_search = ToolNode(tools=[consultar_material_de_apoio])
 
@@ -930,7 +921,7 @@ class AgentMobi:
         graph_builder.add_node("cliente", tools_node_cliente)
         graph_builder.add_node("consultar_vector", tool_vector_search)
 
-        # Corrige a ordem de fluxo: chatbot antes de tool nodes
+        # Fluxo do agent
         graph_builder.set_entry_point("entrada_usuario")
         graph_builder.add_edge("entrada_usuario", "check_user_role")
         graph_builder.add_edge("check_user_role", "chatbot")
