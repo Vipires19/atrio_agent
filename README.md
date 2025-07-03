@@ -135,9 +135,12 @@ Nesse Agent específico não foi necessário utilizar RAG, mas deixei uma tool o
 ## 👨‍💻 Autor
 
 Desenvolvido por Vinícius de Campos Pires
+
 Policial militar, programador e entusiasta em IA aplicada a negócios reais.
+
 📬 [LINKEDIN](https://www.linkedin.com/in/vin%C3%ADcius-de-campos-pires-544a88241/)
 
 ## 📄 Licença
+
 MIT License - sinta-se livre para usar, adaptar e contribuir!
 
