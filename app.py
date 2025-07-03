@@ -1,12 +1,10 @@
 from flask import Flask, request, jsonify
 from services.waha import Waha
 from services.agent_graph_imovel import AgentMobi
-#from services.steve_bot import AgentMike, memory
 import time
 import random
 from langchain_core.prompts.chat import AIMessage,HumanMessage
 from langchain_core.messages import ToolMessage
-from services.memory import get_memory, create_db_schema
 from langgraph.checkpoint.sqlite import SqliteSaver
 import logging
 import datetime
@@ -29,22 +27,10 @@ def formatar_mensagem_whatsapp(texto: str) -> str:
     """
     return texto.replace("**", "*")
 
-# Caminho para o arquivo SQLite onde a memória será persistida
-DB_PATH1 = "database/memoria_chatbot1.db"
-DB_PATH2 = "database/memoria_chatbot2.db"  # Corrigir nomes dos caminhos de banco, se necessário
-DB_PATH3 = "database/memoria_chatbot3.db"
-DB_PATH4 = "database/memoria_chatbot4.db"  
-DB_PATH5 = "database/memoria_consultorio.db"
-
 app = Flask(__name__)
 
-#agent_4 = AgentRastreamento(DB_PATH4)
 agent_5 = AgentMobi()
-#agent_6 = AgentMike()
-
-#model_4 = agent_4.memory_agent()
 model_5 = agent_5.memory_agent()
-#model_6 = agent_6.memory_agent()
 
 def agent_memory(agent_model, input: str, thread_id: str, date: str = None):
     try:
@@ -94,11 +80,7 @@ def asaas_webhook():
 def webhook_5():
     return process_message(model_5, "AGENT5", 'imobiliaria')
 
-#@app.route('/chatbot/webhook/policial/', methods=['POST'])
-#def webhook_6():
-#    return process_message(model_6, "AGENT6", 'policial')
-
-def process_message(agent, agent_name, session):#, memory):
+def process_message(agent, agent_name, session):
     data = request.json
     print(f'EVENTO RECEBIDO ({agent_name}): {data}')
 
