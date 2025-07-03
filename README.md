@@ -68,14 +68,16 @@ Desenvolvido com foco em **eficiência comercial**, ele é ideal para imobiliár
    cd agent-imobiliario-atrio
 
 2. **Crie e ative um ambiente virtual**
-  ``` bash
+  ```bash
   python -m venv venv
   source venv/bin/activate  # Linux/Mac
   venv\Scripts\activate     # Windows
+  ```
 
 3. **Instale as dependências**
   ``` bash
   pip install -r requirements.txt
+  ```
 
 4. **Configure as variáveis de ambiente (.env)**
   ``` bash
@@ -84,15 +86,18 @@ Desenvolvido com foco em **eficiência comercial**, ele é ideal para imobiliár
   MONGO_PASS = "SUA SENHA MONGODB"
   ASSAS_ACCESS_TOKEN = "SUA KEY DO ASSAS"
   NGROK_AUTHTOKEN= "EM AMBIENTE DE DESENVOLVIMENTO UTILIZEI O NGROK PARA GERAR UM DOMÍNIO HTTPS PARA O WEBHOOK DO ASSAS ENTÃO É NECESSÁRIO O AUTHTOKEN DO NGROK"
+  ```
 
 5. **Execute o agente**
  Eu utilizo dois terminais:
   - Um com o comando:
      ``` bash
      docker-compose up --build waha
+     ```
   - Outo com o comando:
      ``` bash
      docker-compose up --build api
+     ```
 
 Em minha humilde opinião torna mais fácil o DEBUG
 
@@ -127,4 +132,7 @@ Em minha visão a proposta de toda IA é aumentar a produtividade e não substit
 Desenvolvido por Vinícius de Campos Pires
 Policial militar, programador e entusiasta em IA aplicada a negócios reais.
 📬 [LINKEDIN](https://www.linkedin.com/in/vin%C3%ADcius-de-campos-pires-544a88241/)
+
+## 📄 Licença
+MIT License - sinta-se livre para usar, adaptar e contribuir!
 
