@@ -125,8 +125,12 @@ Deseja agendar uma visita ou falar com um corretor? 👨‍💼
 ## 💡 Algumas considerações
 
 O Átrio não simula financiamento, mas pode sugerir contato com especialista
+
 A disponibilidade final e agendamento são feitos por um corretor humano.
+
 Em minha visão a proposta de toda IA é aumentar a produtividade e não substituir pessoas, por isso desenvolvi o fluxo do Átrio para gerar e classificar o interesse do usário e direcionar para um corretor, para que este assuma a "lead" e entre em contato com o interessado.
+
+Nesse Agent específico não foi necessário utilizar RAG, mas deixei uma tool onde é possível utilizar o MONGODB para fazer uma vector search, porém é necessário configurar um index em uma collection no próprio Mongo conforme -> [DOCUMENTAÇÃO ATLAS MONGODB](https://www.mongodb.com/docs/atlas/atlas-vector-search/tutorials/vector-search-quick-start/?deployment-type=atlas&interface=driver&language=python)
 
 ## 👨‍💻 Autor
 
