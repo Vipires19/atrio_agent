@@ -64,8 +64,8 @@ Desenvolvido com foco em **eficiência comercial**, ele é ideal para imobiliár
 
 1. **Clone o repositório**
    ```bash
-   git clone https://github.com/seu-usuario/agent-imobiliario-atrio.git
-   cd agent-imobiliario-atrio
+   git clone https://github.com/Vipires19/atrio_agent.git
+   cd atrio_agent
 
 2. **Crie e ative um ambiente virtual**
   ```bash
