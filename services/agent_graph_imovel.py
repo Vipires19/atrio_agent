@@ -55,7 +55,17 @@ access_token = os.getenv('ASSAS_ACCESS_TOKEN')
 webhook_assas.create_webhook('imobi', access_token)
 waha = Waha()
 
+def carrega_txt(caminho):
+    loader = Docx2txtLoader(caminho)
+    lista_documentos = loader.load()
+    documento = '\n\n'.join([doc.page_content for doc in lista_documentos])
+    return documento
+
 memory = MongoDBSaver(coll_memoria)
+
+class State(TypedDict):
+    messages: Annotated[list, add_messages]
+    user_info: Dict[str, Any]
 
 def check_user(state: dict, config: dict) -> dict:
     """
@@ -94,7 +104,7 @@ def check_user(state: dict, config: dict) -> dict:
 
 SYSTEM_PROMPT = """
 🏠 Backstory:
-Você é o **Átrio**, assistente digital da imobiliária. Seu papel é **qualificar leads**, responder dúvidas sobre imóveis com clareza e foco na conversão. Atua como um corretor virtual educado e objetivo.
+Você é o **Átrio**, assistente digital da imobiliária. Seu papel é **qualificar leads**, auxiliar os corretores e funcionários da imobiliária nas tarefas do dia a dia e responder dúvidas sobre imóveis com clareza e foco na conversão. Atua como um corretor virtual educado e objetivo.
 
 📝 Registro e encaminhamento:
 - Se o usuário demonstrar interesse em um imóvel, solicite os dados para utilizar a função `registrar_lead`.
@@ -102,19 +112,19 @@ Você é o **Átrio**, assistente digital da imobiliária. Seu papel é **qualif
 
 🏡 Banco de dados:
 Você pode consultar imóveis com os seguintes dados:
-- Título: Um breve resumo do imóvel
-- Tipo: Casa ou apartamento
-- Finalidade: aluguel ou compra
-- Endereço: Endereço físico do imóvel
-- Bairro: Bairro em que o imóvel está localizado
-- Cidade: Cidade em que o imóvel está localizado
-- Dormitórios: Número de quartos
-- Área útil: Área em m² do imóvel
-- Valor: Valor do imóvel
-- Condomínio: Valor do condomínio
-- IPTU: Valor do IPTU
-- Descrição: Descrição do imóvel
-- Disponível para visitação (sim ou não)
+- título: Um breve resumo do imóvel
+- tipo: Casa ou apartamento
+- finalidade: aluguel ou compra
+- endereço: Endereço físico do imóvel
+- bairro: Bairro em que o imóvel está localizado
+- cidade: Cidade em que o imóvel está localizado
+- dormitórios: Número de quartos
+- área útil: Área em m² do imóvel
+- valor: Valor do imóvel
+- condomínio: Valor do condomínio
+- iptu: Valor do IPTU
+- descrição: Descrição do imóvel
+- disponível para visitação (sim ou não)
 
 🛠️ Ações possíveis:
 - Para corretores:
@@ -147,6 +157,7 @@ Você pode consultar imóveis com os seguintes dados:
 - Nunca solicite dados sensíveis
 - Nunca divulgue dados de outros clientes
 - Se não encontrar imóveis compatíveis, diga que o time comercial pode procurar alternativas
+- Você terá acesso as informações como nome, telefone e função do usuário que está conversando com você, utilize essas informações nas funções que solicitem esses dados como parâmetro.
 
 📈 Exemplos de perguntas:
 - "Tem apartamento de 2 quartos até 2.000 no Centro?"
@@ -211,9 +222,11 @@ def registra_imoveis_disponiveis(titulo: str,
     """
     Cria a entrada de imóveis para o banco de dados. Apenas para corretores.
     """
+    id_ref = str(uuid.uuid4())[:8]
 
     try:
-        imovel = {'título': titulo,
+        imovel = {'id_ref': id_ref,
+                'título': titulo,
                 'tipo': tipo,
                 'finalidade': finalidade,
                 'endereço': endereço,
@@ -505,6 +518,7 @@ def consultar_imovel(querries: list) -> str:
         resposta_final = "🏡 *Imóveis encontrados com base na sua busca:*\n\n"
 
         for imovel in resultados[:5]:
+            resposta_final += f"🔹 *{imovel.get('id_ref', '')}*\n"
             resposta_final += f"🔹 *{imovel.get('título', 'Imóvel')}*\n"
             resposta_final += f"{imovel.get('descricao', 'Descrição não disponível')}\n"
             resposta_final += f"📍 Bairro: {imovel.get('bairro', 'Bairro não informado')} - {imovel.get('cidade', 'Cidade não informada')}\n"
@@ -520,21 +534,45 @@ def consultar_imovel(querries: list) -> str:
         return f"Erro ao consultar imóveis: {str(e)}"
 
 @tool("gerar_lead_interessado")
-def gerar_lead_interessado(nome: str,
-                           telefone: str,
+def gerar_lead_interessado(nome:str,
+                           telefone:str,
                            mensagem: str,
                            finalidade: str,
-                           titulo: str,
-                           bairro: str,
-                           orçamento: float,
+                           orcamento: float,
+                           id_imovel: str,
                            urgencia: str) -> str:
     """
     Registra um lead com classificação estratégica baseada na finalidade, orçamento e urgência.
-    Notifica automaticamente os corretores e retorna uma resposta adaptada ao cliente.
-    Não gera a lead antes de obter todas essas informações, pois sem as informações completas não sera possível uma classificão precisa.
+    Se faltar algum dado essencial, a função pede a informação ao cliente antes de seguir.
+
+    Parametros:
+    Nome: Nome do usuário
+    Telefone: Telefone do usuário
+    mensagem: Mensagem do usuário
+    finalidade: Compra ou aluguel
+    id_imovel: Id de referência do imóvel
+    titulo: Título do imóvel
+    bairro: Bairro do imóvel
+    orcamento: Orçamento disponível do usuário
+    urgencia: Urgência do usuário (alta, média ou baixa)
     """
+
     id_ref = str(uuid.uuid4())[:8]
 
+    # 🔎 Validação prévia
+    if not orcamento or orcamento <= 0:
+        return (
+            "💬 Para te ajudar da melhor forma, poderia me dizer qual o valor máximo que pretende investir ou pagar por mês? "
+            "Essa informação é essencial para encontrar o imóvel ideal. 💰🏡"
+        )
+
+    if urgencia.strip().lower() not in ["alta", "média", "media", "baixa"]:
+        return (
+            "⚡ Só mais uma coisa: qual o seu nível de urgência? Alta, média ou baixa?\n"
+            "Assim consigo priorizar seu atendimento da forma certa! 🔍"
+        )
+
+    imovel = coll3.find_one({"id_ref": id_imovel})
 
     try:
         lead = {
@@ -542,111 +580,100 @@ def gerar_lead_interessado(nome: str,
             "telefone": telefone,
             "mensagem_original": mensagem,
             "finalidade": finalidade.lower(),
-            "imovel": titulo.lower(),
-            "bairro_interesse": bairro,
-            "orçamento_aproximado": orçamento,
+            "imovel": imovel["titulo"],
+            "bairro_interesse": imovel["bairro"],
+            "orçamento_aproximado": orcamento,
             "urgencia": urgencia.lower(),
-            "status" : "disponível",
-            "id_ref" : id_ref,
+            "status": "disponível",
+            "id_ref": id_ref,
             "canal": "assistente_virtual",
             "data_criacao": datetime.now().isoformat()
         }
-
-        # Busca imóvel por título e finalidade
-        imovel = coll3.find_one({
-            "Título": {"$regex": titulo, "$options": "i"},
-            "Finalidade": {"$regex": finalidade, "$options": "i"}
-        })
 
         corretores = list(coll5.find({'funcao': 'corretor'}))
         contatos = [c['telefone'] for c in corretores]
 
         if imovel:
-            valor_imovel = imovel["Valor"]
-            relacao = orçamento / valor_imovel
+            valor_imovel = imovel["valor"]
+            relacao = orcamento / valor_imovel
 
-            lead["possivel_imovel_relacionado"] = {
-                "Título": imovel["Título"],
+            lead["imovel_relacionado"] = {
+                "id": imovel["id_ref"],
+                "Título": imovel["titulo"],
                 "Valor": valor_imovel,
-                "Bairro": imovel["Bairro"]
+                "Bairro": imovel["bairro"]
             }
 
-            # CLASSIFICAÇÃO
+            # 🧠 Classificação de lead
+            urg = urgencia.lower()
             if finalidade.lower() == "compra":
                 if relacao >= 0.7:
                     lead["classificacao"] = "lead quente"
-                elif relacao >= 0.5 and urgencia == 'alta':
+                elif relacao >= 0.5 and urg == 'alta':
                     lead["classificacao"] = "lead quente"
                 elif relacao >= 0.5:
                     lead["classificacao"] = "lead morno"
-                elif urgencia == 'alta':
+                elif urg == 'alta':
                     lead["classificacao"] = "lead morno"
                 else:
                     lead["classificacao"] = "lead frio"
-
             elif finalidade.lower() in ["locação", "aluguel"]:
-                if relacao >= 0.7 and urgencia == "alta":
+                if relacao >= 0.7 and urg == "alta":
                     lead["classificacao"] = "lead quente"
                 elif relacao >= 0.7:
                     lead["classificacao"] = "lead morno"
                 else:
                     lead["classificacao"] = "lead frio"
-
             else:
                 lead["classificacao"] = "em análise"
-
         else:
-            lead["possivel_imovel_relacionado"] = "Não identificado automaticamente"
+            lead["imovel_relacionado"] = "Não identificado automaticamente"
             lead["classificacao"] = "em análise"
 
-        # Salva no banco
         coll4.insert_one(lead)
 
-        if lead["classificacao"] == "lead quente" or lead["classificacao"] == "lead morno":
-        # Notifica corretores
-            mensagem_corretor = f"""📢 *Novo Lead no Sistema*:\n
-                                    📌 ID: {lead['id_ref']}\n
-                                    👤 Cliente: {lead['nome']}\n
-                                    📞 Contato: {lead['telefone']}\n
-                                    🏡 Imóvel: {lead['imovel']} ({lead['finalidade']})\n
-                                    📍 Bairro: {lead['bairro_interesse']}\n
-                                    💰 Orçamento: R$ {lead['orçamento_aproximado']:,.2f}\n
-                                    ⚡ Urgência: {lead['urgencia'].capitalize()}\n
-                                    🔥 Classificação: *{lead['classificacao'].upper()}*\n
-                                    """
+        if lead["classificacao"] in ["lead quente", "lead morno"]:
+            mensagem_corretor = (
+                f"📢 *Novo Lead no Sistema*:\n"
+                f"📌 ID: {lead['id_ref']}\n"
+                f"👤 Cliente: {lead['nome']}\n"
+                f"📞 Contato: {lead['telefone']}\n"
+                f"🏡 Imóvel: {lead['imovel']} ({lead['finalidade']})\n"
+                f"📍 Bairro: {lead['bairro_interesse']}\n"
+                f"💰 Orçamento: R$ {lead['orçamento_aproximado']:,.2f}\n"
+                f"⚡ Urgência: {lead['urgencia']}\n"
+                f"🔥 Classificação: *{lead['classificacao'].upper()}*"
+            )
 
-            try:
-                for contato in contatos:
+            for contato in contatos:
+                try:
                     chat_id = waha.verify_wid(contato, 'imobiliaria')
                     waha.send_message(chat_id, mensagem_corretor, 'imobiliaria')
-                    print(f"Mensagem enviada para corretor: {contato}")
-            except Exception as e:
-                print(f"Erro ao enviar mensagem: {e}")
+                except Exception as e:
+                    print(f"Erro ao notificar corretor {contato}: {e}")
 
-        # Resposta automática para o cliente
-        if lead["classificacao"] == "lead quente":
-            resposta_cliente = (
+        # 🎯 Resposta adaptada ao cliente
+        respostas = {
+            "lead quente": (
                 "🚀 Obrigado pelo seu interesse!\n"
                 "Seu perfil foi classificado como *lead quente*, e um de nossos corretores já está sendo acionado "
-                "pra falar com você ainda hoje. Fica no QAP! 💬"
-            )
-        elif lead["classificacao"] == "lead morno":
-            resposta_cliente = (
+                "pra falar com você! 💬"
+            ),
+            "lead morno": (
                 "🟡 Obrigado pelo interesse!\n"
                 "Seu perfil está no radar e em breve um corretor pode entrar em contato pra entender melhor suas preferências."
-            )
-        elif lead["classificacao"] == "lead frio":
-            resposta_cliente = (
+            ),
+            "lead frio": (
                 "🔍 Lead registrado com sucesso!\n"
                 "Se surgir mais alguma info sobre orçamento ou urgência, posso te ajudar a encontrar algo mais certeiro!"
-            )
-        else:
-            resposta_cliente = (
+            ),
+            "em análise": (
                 "✅ Lead registrado!\n"
                 "Vamos avaliar sua solicitação e um de nossos especialistas pode te chamar em breve. TKS pelo contato!"
             )
+        }
 
-        return resposta_cliente
+        return respostas.get(lead["classificacao"], "✅ Lead registrada!")
 
     except Exception as e:
         return f"❌ Erro ao registrar lead: {str(e)}"
@@ -810,17 +837,20 @@ def enviar_segunda_via_boleto(telefone: str) -> str:
         }
 
         response = requests.get(url, headers=headers).json()
+        boleto = response["data"][0]
 
         retorno = (
             f"✅ *2ª via do Boleto!*\n"
-            f"🧾 ID: {response['id']}\n"
-            f"💰 Valor: R$ {response['value']:.2f}\n"
-            f"📅 Vencimento: {response['dueDate']}\n"
-            f"🔗 Link do boleto: {response['bankSlipUrl']}"
+            f"🧾 ID: {boleto['id']}\n"
+            f"💰 Valor: R$ {boleto['value']:.2f}\n"
+            f"📅 Vencimento: {boleto['dueDate']}\n"
+            f"🔗 Link do boleto: {boleto['bankSlipUrl']}"
         )
 
         if not response:
             return "❌ Não encontrei nenhum boleto cadastrado para este telefone."
+
+        return retorno
 
     except Exception as e:
         return f"❌ Erro ao buscar boleto: {str(e)}"
@@ -837,10 +867,6 @@ tools_node = [cadastrar_novo_corretor,
          pesquisar_cobrancas,
          criar_boleto_asaas,
          listar_cliente_pagamento]
-
-class State(TypedDict):
-    messages: Annotated[list, add_messages]
-    user_info: Dict[str, Any]
   
 class AgentMobi:
     def __init__(self):
@@ -854,6 +880,9 @@ class AgentMobi:
     
     def _build_agent(self):
         graph_builder = StateGraph(State)
+        #tools =tools_node
+        #llm = ChatOpenAI(model="gpt-4o-mini",openai_api_key=OPENAI_API_KEY, streaming=True)
+        #llm_with_tools = llm.bind_tools(tools=tools)
         
         tool_vector_search = ToolNode(tools=[consultar_material_de_apoio])
 
@@ -921,7 +950,7 @@ class AgentMobi:
         graph_builder.add_node("cliente", tools_node_cliente)
         graph_builder.add_node("consultar_vector", tool_vector_search)
 
-        # Fluxo do agent
+        # Corrige a ordem de fluxo: chatbot antes de tool nodes
         graph_builder.set_entry_point("entrada_usuario")
         graph_builder.add_edge("entrada_usuario", "check_user_role")
         graph_builder.add_edge("check_user_role", "chatbot")
