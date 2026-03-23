@@ -1,146 +1,190 @@
-# 🏡 Átrio – Agente Virtual para Imobiliárias
+# 🏡 Atrio – AI Real Estate Assistant
 
-> Um assistente digital inteligente para transformar o atendimento imobiliário.  
-> Automatize o cadastro de imóveis, a qualificação de leads, a emissão de boletos e muito mais — tudo com IA generativa, WhatsApp e integração bancária.
-
----
-
-## ✨ Visão Geral
-
-O **Átrio** é um agente virtual que simula um corretor digital treinado para qualificar clientes, sugerir imóveis, classificar leads por potencial de compra e até mesmo emitir boletos via Asaas — tudo isso integrado ao WhatsApp por meio da API Waha.
-
-Desenvolvido com foco em **eficiência comercial**, ele é ideal para imobiliárias que desejam escalar o atendimento com inteligência, agilidade e personalização.
+> An intelligent virtual agent designed to transform real estate customer service.  
+> Automate property listings, lead qualification, payment generation, and more — powered by generative AI, WhatsApp integration, and financial APIs.
 
 ---
 
-## 🔧 Tecnologias Utilizadas
+## ✨ Overview
 
-| Ferramenta | Finalidade |
-|------------|------------|
-| 🧠 LangGraph + LangChain | Criação do agente com roteamento e ferramentas |
-| 💬 OpenAI GPT-4o-mini | Processamento de linguagem e geração de respostas |
-| 🧾 API Asaas | Cadastro de clientes e geração de boletos |
-| 📦 MongoDB | Armazenamento de usuários, imóveis, leads e histórico de conversas |
-| 🤖 Waha API | Integração com WhatsApp Business |
-| 🧭 Python + FastAPI | Backend do agente e interface com serviços externos |
+**Atrio** is an AI-powered virtual assistant that acts as a digital real estate agent.
 
----
+It is capable of:
 
-## ⚙️ Funcionalidades
+- Qualifying leads
+- Recommending properties
+- Classifying customer intent
+- Generating payment requests (boletos)
+- Integrating directly with WhatsApp
 
-### Para clientes:
-- Buscar imóveis por tipo, bairro, valor ou número de dormitórios
-- Sugerir imóveis com base em preferências
-- Registrar leads com orçamento e urgência
-- Emitir 2ª via de boletos
-- Consultar cobranças anteriores
-
-### Para corretores:
-- Cadastrar novos corretores e clientes
-- Inserir novos imóveis com descrição automática via IA
-- Assumir leads disponíveis
-- Consultar histórico de leads
-- Emitir boletos diretamente pela Asaas
-- Receber notificações automáticas no WhatsApp
-
-### Extras:
-- Classificação de leads automática (quente, morno, frio)
-- Descrição de imóveis gerada com IA (copy de marketing)
-- Roteamento inteligente no fluxo com base no perfil do usuário
+Built with a focus on **sales efficiency and scalability**, Atrio enables real estate businesses to automate high-volume interactions while maintaining personalized service.
 
 ---
 
-## 🧠 Exemplo de Fluxo
+## 🧠 Core Capabilities
 
-> 🧑 Cliente: "Gostaria de ver casas até R$2.000 no bairro Campos Elíseos"
-
-→ O Átrio entende a intenção, aplica filtros, retorna imóveis compatíveis.  
-→ Se houver interesse, registra como lead e classifica conforme urgência e orçamento.  
-→ Caso classificado como lead quente, um corretor é notificado no WhatsApp.
+- 🤖 AI-driven lead qualification
+- 🏡 Smart property recommendation engine
+- 📊 Lead scoring (hot / warm / cold)
+- 💬 WhatsApp automation (via Waha API)
+- 💳 Payment generation via Asaas API
+- 🧾 AI-generated property descriptions (marketing copy)
+- 🔀 Intelligent conversation routing based on user profile
 
 ---
 
-## 🛠️ Como Rodar Localmente
+## 🛠️ Tech Stack
 
-1. **Clone o repositório**
-   ```bash
-   git clone https://github.com/Vipires19/atrio_agent.git
-   cd atrio_agent
+| Technology | Purpose |
+|------------|--------|
+| 🧠 LangGraph + LangChain | Agent orchestration and tool routing |
+| 💬 OpenAI (GPT-4o-mini) | Natural language understanding & generation |
+| 📦 MongoDB | Data storage (users, properties, leads, chat memory) |
+| 💳 Asaas API | Payment processing and billing |
+| 📱 Waha API | WhatsApp Business integration |
+| ⚡ FastAPI | Backend services and API layer |
+| 🐳 Docker | Containerized deployment |
 
-2. **Crie e ative um ambiente virtual**
-  ```bash
-  python -m venv venv
-  source venv/bin/activate  # Linux/Mac
-  venv\Scripts\activate     # Windows
-  ```
+---
 
-3. **Instale as dependências**
-  ``` bash
-  pip install -r requirements.txt
-  ```
+## ⚙️ Features
 
-4. **Configure as variáveis de ambiente (.env)**
-  ``` bash
-  OPENAI_API_KEY= "SUA KEY DA OPENAI"
-  MONGO_USER = "SEU USUÁRIO MONGODB"
-  MONGO_PASS = "SUA SENHA MONGODB"
-  ASSAS_ACCESS_TOKEN = "SUA KEY DO ASSAS"
-  NGROK_AUTHTOKEN= "EM AMBIENTE DE DESENVOLVIMENTO UTILIZEI O NGROK PARA GERAR UM DOMÍNIO HTTPS PARA O WEBHOOK DO ASSAS ENTÃO É NECESSÁRIO O AUTHTOKEN DO NGROK"
-  ```
+### 👤 For Customers
 
-5. **Execute o agente**
+- Search properties by:
+  - Location
+  - Price range
+  - Property type
+  - Number of bedrooms
+- Receive personalized property recommendations
+- Register interest (lead capture)
+- Request payment slips (boletos)
+- View previous charges
 
- Eu utilizo dois terminais:
-  - Um com o comando:
-     ``` bash
-     docker-compose up --build waha
-     ```
-  - Outo com o comando:
-     ``` bash
-     docker-compose up --build api
-     ```
+---
 
-Em minha humilde opinião torna mais fácil o DEBUG
+### 🧑‍💼 For Agents
 
-## 📁 Estrutura dos Dados
+- Register new clients and agents
+- Add property listings with AI-generated descriptions
+- Claim and manage leads
+- Access lead history
+- Generate payment requests
+- Receive WhatsApp notifications for hot leads
 
-**imoveis**: imóveis disponíveis com dados estruturados
+---
 
-**leads**: interessados com dados estratégicos para classificação
+### ⚡ Additional Features
 
-**clientes e corretores**: perfis identificados pelo número de telefone (thread_id)
+- Automatic lead classification (hot, warm, cold)
+- AI-generated real estate marketing copy
+- Intelligent flow routing based on user intent
+- Persistent chat memory per user (thread-based)
 
-**memoria_chat**: histórico da conversa persistente por thread
+---
 
-## 📦 Exemplos de Prompt e Resposta
+## 🔄 Example Flow
 
-**Usuário**: Tem apartamento de 2 quartos até 2000 reais no Centro?
+**User:**  
+> "I'm looking for a house under R$2000 in Campos Elíseos"
 
-**Átrio**: Aqui estão algumas opções que encontrei! 🏢✨
-1. Apto com 2 dorm., 65m² – Bairro Centro – R$1.950
-Disponível para visitação ✅
+**Atrio:**
+- Understands intent and filters properties
+- Returns matching listings
+- Captures the user as a lead
+- Classifies lead based on urgency and budget
 
-Deseja agendar uma visita ou falar com um corretor? 👨‍💼
+➡️ If classified as a **hot lead**, a real estate agent is automatically notified via WhatsApp.
 
-## 💡 Algumas considerações
+---
 
-O Átrio não simula financiamento, mas pode sugerir contato com especialista
+## 🏗️ Architecture Overview
 
-A disponibilidade final e agendamento são feitos por um corretor humano.
+- **Agent-based architecture** using LangGraph
+- Modular tools for:
+  - Property search
+  - Lead management
+  - Payment generation
+- Persistent memory stored in MongoDB
+- WhatsApp communication handled via Waha API
+- External integrations (Asaas, MongoDB, OpenAI)
 
-Em minha visão a proposta de toda IA é aumentar a produtividade e não substituir pessoas, por isso desenvolvi o fluxo do Átrio para gerar e classificar o interesse do usário e direcionar para um corretor, para que este assuma a "lead" e entre em contato com o interessado.
+---
 
-Nesse Agent específico não foi necessário utilizar RAG, mas deixei uma tool onde é possível utilizar o MONGODB para fazer uma vector search, porém é necessário configurar um index em uma collection no próprio Mongo conforme -> [DOCUMENTAÇÃO ATLAS MONGODB](https://www.mongodb.com/docs/atlas/atlas-vector-search/tutorials/vector-search-quick-start/?deployment-type=atlas&interface=driver&language=python)
+## 🛠️ Local Setup
 
-## 👨‍💻 Autor
+### 1. Clone the repository
 
-Desenvolvido por Vinícius de Campos Pires
+```bash
+git clone https://github.com/Vipires19/atrio_agent.git
+cd atrio_agent
+2. Create a virtual environment
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+3. Install dependencies
+pip install -r requirements.txt
+4. Configure environment variables
 
-Policial militar, programador e entusiasta em IA aplicada a negócios reais.
+Create a .env file:
 
-📬 [LINKEDIN](https://www.linkedin.com/in/vin%C3%ADcius-de-campos-pires-544a88241/)
+OPENAI_API_KEY=your_openai_key
+MONGO_USER=your_mongo_user
+MONGO_PASS=your_mongo_password
+ASAAS_ACCESS_TOKEN=your_asaas_key
+NGROK_AUTHTOKEN=your_ngrok_token
 
-## 📄 Licença
+⚠️ Ngrok is used in development to expose HTTPS endpoints for webhook integration (Asaas).
 
-MIT License - sinta-se livre para usar, adaptar e contribuir!
+5. Run the services
 
+Run in two separate terminals:
+
+Terminal 1:
+
+docker-compose up --build waha
+
+Terminal 2:
+
+docker-compose up --build api
+
+Running services separately improves debugging and observability.
+
+📊 Data Structure
+properties → available real estate listings
+leads → qualified customer data
+clients / agents → identified by phone number (thread_id)
+chat_memory → persistent conversation history
+📦 Example Interaction
+
+User:
+
+"Do you have 2-bedroom apartments under 2000 in downtown?"
+
+Atrio:
+
+Here are some options I found! 🏢✨
+
+2-bedroom apartment, 65m² – Downtown – R$1,950
+Available for visits ✅
+
+Would you like to schedule a visit or talk to an agent?
+
+⚠️ Notes
+Atrio does not simulate financing, but can redirect users to specialists
+Final negotiations and scheduling are handled by human agents
+The system is designed to augment human productivity, not replace it
+🔮 Future Improvements
+Full RAG implementation with vector database
+Advanced analytics dashboard for leads
+Multi-agent orchestration
+CRM integration
+Multi-language support
+Deployment on cloud infrastructure
+👨‍💻 Author
+
+Developed by Vinícius de Pires
+
+📄 License
+
+MIT License — feel free to use, modify and contribute.
